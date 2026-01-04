@@ -12,6 +12,7 @@ This project addresses a critical vulnerability in modern telehealth: **the lack
   - 🎤 Voice Recognition (ECAPA-TDNN model)
   - ⌨️ Keystroke Dynamics (Deep Neural Network)
   - 🖱️ Mouse Movement Analysis (Siamese Network)
+  - 👤 Face Recognition (ResNet50 with Triplet Loss)
 
 - **Real-time Verification**
   - Continuous monitoring during video consultations
@@ -61,6 +62,15 @@ Cyber_Project_1121/
     ├── src/                    # Mouse analysis modules
     ├── main.py                 # CLI interface
     └── start_api.bat           # API launcher
+
+└── Face Recognition/           # Python ML - Face Verification
+    ├── models/                 # Pretrained ResNet50 model
+    ├── src/                    # Face recognition modules
+    │   ├── api.py              # FastAPI server
+    │   ├── embedding.py        # Embedding generation
+    │   └── similarity.py       # Similarity computation
+    ├── test.py                 # Testing script
+    └── start_api.bat           # API launcher
 ```
 
 ## 🚀 Installation & Setup
@@ -102,6 +112,13 @@ pip install -r requirements.txt
 python main.py api
 ```
 
+#### Face Recognition API (Port 8000)
+```bash
+cd "Face Recognition"
+pip install -r requirements.txt
+python -m uvicorn src.api:app --reload --host 127.0.0.1 --port 8000
+```
+
 ### Step 3: Setup Backend
 
 ```bash
@@ -138,6 +155,7 @@ JWT_EXPIRE=7d
 VOICE_API_URL=http://localhost:8001
 KEYSTROKE_API_URL=http://localhost:8002
 MOUSE_API_URL=http://localhost:8003
+FACE_API_URL=http://localhost:8000
 
 CLIENT_URL=http://localhost:5173
 ```
@@ -152,8 +170,7 @@ CLIENT_URL=http://localhost:5173
 4. Complete biometric enrollment:
    - **Voice Sample**: Record 5-10 seconds of speech
    - **Keystroke Pattern**: Type the given phrase 3 times
-   - **Mouse Pattern**: Move mouse naturally for 10 seconds
-5. Submit registration
+   - **Mouse Pattern**: Move mouse naturally for 10 seconds   - **Face Photo**: Upload a clear face photo5. Submit registration
 
 ### 2. Login
 
@@ -169,6 +186,7 @@ CLIENT_URL=http://localhost:5173
    - Voice patterns (when speaking)
    - Typing patterns (when typing)
    - Mouse movements (continuous)
+   - Face verification (periodic camera snapshots)
 4. Monitor your trust score in real-time
 5. End consultation when done
 
@@ -190,11 +208,12 @@ CLIENT_URL=http://localhost:5173
 - **Voice**: FastAPI server on port 8001
 - **Keystroke**: FastAPI server on port 8002
 - **Mouse**: FastAPI server on port 8003
+- **Face**: FastAPI server on port 8000
 
 ## 🔐 Security Features
 
 1. **Continuous Authentication**: Not just login - verify throughout session
-2. **Multi-Modal Fusion**: Combine 3 biometric modalities
+2. **Multi-Modal Fusion**: Combine 4 biometric modalities (voice, keystroke, mouse, face)
 3. **Real-time Alerts**: Instant notification of suspicious activity
 4. **Trust Score**: Dynamic score based on verification confidence
 5. **Session Logging**: Complete audit trail of all verifications
@@ -220,11 +239,12 @@ CLIENT_URL=http://localhost:5173
 - `POST /api/verification/voice` - Verify voice sample
 - `POST /api/verification/keystroke` - Verify keystroke pattern
 - `POST /api/verification/mouse` - Verify mouse movement
+- `POST /api/verification/face` - Verify face image
 - `GET /api/verification/health` - Check ML services health
 
 ## 🧪 Testing
 
-1. Ensure all 3 Python ML APIs are running
+1. Ensure all 4 Python ML APIs are running (voice, keystroke, mouse, face)
 2. Start the backend server
 3. Start the frontend development server
 4. Register a new doctor account
@@ -270,6 +290,7 @@ We've created detailed documentation explaining each ML component, the models us
 | **Anti-Spoof** | Lightweight CNN | 95%+ | 100ms | Spatial pattern recognition in spectrograms |
 | **Keystroke** | Deep Neural Net | 96% | 500ms | Non-linear temporal pattern recognition |
 | **Mouse** | Siamese Network | 92%+ | 300ms | Similarity metric learning for behavioral comparison |
+| **Face** | ResNet50 Triplet | 95%+ | 200ms | Deep embeddings with triplet loss for identity verification |
 
 ### Key Advantages of Deep Learning
 
@@ -290,6 +311,60 @@ For complete technical details, see the documentation files listed above.
 - All Python ML models are pre-trained and ready to use
 - Voice recording requires HTTPS in production (works on localhost)
 - Ensure all 5 services are running simultaneously for full functionality
+
+## 📄 Face Recognition Details
+
+### Model Architecture
+- **Model**: ResNet50 trained with Triplet Loss
+- **Task**: Face verification (1:1 identity matching)
+- **Input**: RGB face images (160x160)
+- **Output**: 512-dimensional embeddings
+- **API Port**: 8000
+
+### Features
+- Pre-trained ResNet50 model with triplet loss optimization
+- 512-dimensional face embeddings for efficient comparison
+- Cosine similarity matching with validated threshold (0.9535)
+- FastAPI-based REST API for easy integration
+
+### Setup
+```bash
+cd "Face Recognition"
+pip install -r requirements.txt
+python -m uvicorn src.api:app --reload --host 127.0.0.1 --port 8000
+```
+
+### Usage Example
+```python
+from src.embedding import generate_embedding
+from src.similarity import compute_similarity
+
+embedding1 = generate_embedding('face1.jpg')
+embedding2 = generate_embedding('face2.jpg')
+similarity = compute_similarity(embedding1, embedding2)
+
+if similarity >= 0.9535:
+    print("MATCH")
+else:
+    print("NO MATCH")
+```
+
+### API Endpoints
+- `POST /verify` - Compare two face images
+- `POST /embed` - Generate embedding for a single face image
+- `GET /health` - Check API health status
+
+### Preprocessing Requirements
+- Images must be resized to 160x160
+- Normalized with mean=[0.5, 0.5, 0.5] and std=[0.5, 0.5, 0.5]
+- RGB color format
+
+### Testing
+```bash
+python test.py
+```
+
+## 📝 Additional Notes
 
 ## 🤝 Contributing
 
